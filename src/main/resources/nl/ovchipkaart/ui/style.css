@@ -1,0 +1,105 @@
+.title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #003082;
+}
+
+.subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+}
+
+.label-bold {
+    -fx-font-weight: bold;
+}
+
+.field-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #003082;
+}
+
+.balance {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #003082;
+}
+
+.status {
+    -fx-font-style: italic;
+    -fx-text-fill: #666666;
+}
+
+.card-type {
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFC917;
+    -fx-background-color: #003082;
+    -fx-padding: 3 10;
+    -fx-background-radius: 10;
+}
+
+.card-info-bar {
+    -fx-background-color: #f0f4f8;
+    -fx-background-radius: 8;
+    -fx-border-color: #003082;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.login-container {
+    -fx-background-color: #f0f4f8;
+}
+
+.tap-button {
+    -fx-background-color: #003082;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20;
+    -fx-background-radius: 5;
+}
+
+.tap-button:hover {
+    -fx-background-color: #004bb5;
+}
+
+.register-button {
+    -fx-background-color: #FFC917;
+    -fx-text-fill: #003082;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20;
+    -fx-background-radius: 5;
+}
+
+.register-button:hover {
+    -fx-background-color: #ffd84d;
+}
+
+.logout-button {
+    -fx-background-color: #999999;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+}
+
+.logout-button:hover {
+    -fx-background-color: #777777;
+}
+
+.penalty-button {
+    -fx-background-color: #cc0000;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+}
+
+.penalty-button:hover {
+    -fx-background-color: #ee0000;
+}
+
+.warning {
+    -fx-text-fill: #cc0000;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.message {
+    -fx-text-fill: #003082;
+    -fx-font-style: italic;
+}

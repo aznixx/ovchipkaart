@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15" alignment="CENTER" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="nl.ovchipkaart.ui.LoginController" styleClass="login-container">
+    <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+
+    <Label text="OV-chipkaart" styleClass="title"/>
+    <Label text="Log in or create an account" styleClass="subtitle"/>
+
+    <Separator/>
+
+    <VBox spacing="8" alignment="CENTER_LEFT" maxWidth="300">
+        <Label text="Name" styleClass="field-label"/>
+        <TextField fx:id="nameField" promptText="Jan de Vries"/>
+
+        <Label text="Email" styleClass="field-label"/>
+        <TextField fx:id="emailField" promptText="jan@email.nl"/>
+
+        <Label text="Password" styleClass="field-label"/>
+        <PasswordField fx:id="passwordField" promptText="password"/>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <CheckBox fx:id="personalCheckBox" text="Personal card" selected="true"/>
+        </HBox>
+    </VBox>
+
+    <HBox spacing="15" alignment="CENTER">
+        <Button text="Login" onAction="#onLogin" styleClass="tap-button" prefWidth="120"/>
+        <Button text="Register" onAction="#onRegister" styleClass="register-button" prefWidth="120"/>
+    </HBox>
+
+    <Label fx:id="messageLabel" styleClass="message" wrapText="true" maxWidth="300"/>
+</VBox>

@@ -1,0 +1,10 @@
+nl\ovchipkaart\OVCardTest$CheckOut.class
+nl\ovchipkaart\OVCardTest$TopUp.class
+nl\ovchipkaart\GateTest.class
+nl\ovchipkaart\TopUpServiceTest.class
+nl\ovchipkaart\MissedCheckoutDetectorTest.class
+nl\ovchipkaart\OVCardTest.class
+nl\ovchipkaart\FareCalculatorTest.class
+nl\ovchipkaart\OVCardTest$MissedCheckout.class
+nl\ovchipkaart\OVCardTest$CheckIn.class
+nl\ovchipkaart\OVCardTest$AutoTopUp.class
