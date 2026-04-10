@@ -24,7 +24,7 @@
 │  │  └────────────┘   └──────────┘   └─────────────┘               │    │
 │  │                         │                                      │    │
 │  │                    ┌────┴────┐                                 │    │
-│  │                    │Transactie│                                 │    │
+│  │                    │Transactie│                                 │    │                        
 │  │                    │bekijken │                                 │    │
 │  │                    └─────────┘                                 │    │
 │  └─────────────────────────────────────────────────────────────────┘    │
@@ -32,7 +32,7 @@
 │         │                    │                    │                     │
 │    ┌────┴────┐          ┌────┴────┐          ┌───┴───┐                 │
 │    │Reiziger │          │ Station │          │  NS   │                 │
-│    │(Anoniem)│          │(Poort)  │          │Systeem│                 │
+│    │         │          │(Poort)  │          │Systeem│                 │
 │    └─────────┘          └─────────┘          └───────┘                 │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -46,11 +46,14 @@
 **Binnen het systeem:**
 - Saldo beheer op de kaart
 - In- en uitchecken bij stations
-- Ritprijs berekening
-- Transactiehistorie
-- Top-up functionaliteit
-- Accountbeheer
+- Ritprijs berekening (inclusief overstap en kortingen)
+- Transactiehistorie (bekijken en exporteren)
+- Top-up functionaliteit (handmatig en automatisch)
+- Account- en profielbeheer
 - Dagkaart functionaliteit
+- OV-fiets verhuur (OV-card integratie)
+- Loyaliteitsprogramma (punten sparen en inwisselen)
+- Saldo-bescherming bij gemiste check-out
 
 **Buiten het systeem:**
 - Fysieke OV-chipkaart hardware
@@ -63,7 +66,7 @@
 
 | Actor | Beschrijving | Type |
 |-------|--------------|------|
-| **Reiziger (Anoniem)** | Heeft een anonieme OV-chipkaart zonder naamgeving. Kan opladen, in- en uitchecken. | Primair |
+| **Reiziger** | Heeft een anonieme of persoonlijke OV-chipkaart. Kan opladen, reizen en diensten gebruiken. | Primair |
 | **Station/Poort** | Fysiek systeem dat in- en uitchecken registreert. | Secundair |
 | **NS Systeem** | Centraal systeem voor ritprijzen en abonnementen. | Secundair |
 
@@ -286,21 +289,79 @@
 
 ---
 
+### 4.8 Use Case: OV-fiets Huren
+
+| Element | Beschrijving |
+|---------|--------------|
+| **ID** | UC-08 |
+| **Naam** | OV-fiets Huren |
+| **Beschrijving** | Reiziger huurt een fiets bij een station met de OV-chipkaart |
+| **Primaire actor** | Reiziger |
+
+**Precondities:**
+- Saldo is minimaal €3.85
+- Geen actieve fiets-huur op de kaart
+- Kaart niet verlopen of geblokkeerd
+
+**Postcondities:**
+- €3.85 is afgeschreven (huurprijs 24u)
+- Fiets-status is "Verhuurd" op de kaart
+- Transactie is geregistreerd
+
+---
+
+### 4.9 Use Case: Loyaliteitspunten Inwisselen
+
+| Element | Beschrijving |
+|---------|--------------|
+| **ID** | UC-09 |
+| **Naam** | Punten Inwisselen |
+| **Beschrijving** | Reiziger wisselt gespaarde punten in voor saldo |
+| **Primaire actor** | Reiziger |
+
+**Precondities:**
+- Punten saldo > 0
+
+**Postcondities:**
+- Punten zijn verlaagd
+- Saldo is verhoogd (€0.01 per 1 punt)
+- Transactie is geregistreerd
+
+---
+
 ## 5. Domeinmodel (Klassen)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
+│                               Traveler                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│ - name: String                                                          │
+│ - card: OVCard                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│ + getName(): String                                                     │
+│ + getCard(): OVCard                                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ 1
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
 │                              Account                                    │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ - name: String                                                          │
-│ - email: String                                                        │
-│ - password: String                                                     │
-│ - cards: List<OVCard>                                                  │
+│ - email: String                                                         │
+│ - password: String                                                      │
+│ - cards: List<OVCard>                                                   │
+│ - profilePicturePath: String                                            │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ + addCard(personal: boolean): OVCard                                    │
-│ + removeCard(index: int): boolean                                      │
-│ + saveToFile(folder: String): void                                     │
-│ + loadFromFile(folder: String, email: String): Account                 │
+│ + removeCard(index: int): boolean                                       │
+│ + checkPassword(password: String): boolean                              │
+│ + changePassword(old: String, new: String): boolean                     │
+│ + transferBetweenCards(from: int, to: int, amount: double): boolean      │
+│ + buyGroupDayPass(): int                                                │
+│ + saveToFile(folder: String): void                                      │
+│ + static loadFromFile(folder: String, email: String): Account           │
+│ + static exists(folder: String, email: String): boolean                 │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     │ 1..*
@@ -308,39 +369,54 @@
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                                OVCard                                   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│ - cardNumber: String                                                   │
-│ - balance: double                                                      │
-│ - personal: boolean                                                   │
-│ - blocked: boolean                                                    │
-│ - expiryDate: LocalDate                                               │
-│ - travelClass: TravelClass                                             │
-│ - subscription: Subscription                                           │
-│ - transactions: List<Transaction>                                     │
-│ - checkedInAt: Station                                                │
-│ - checkedInTransport: TransportType                                   │
-│ - checkInTime: LocalDateTime                                          │
-│ - autoTopUpEnabled: boolean                                           │
-│ - lastCheckoutTime: LocalDateTime                                     │
-│ - dayPassActive: boolean                                              │
+│ - cardNumber: String                                                    │
+│ - balance: double                                                       │
+│ - personal: boolean                                                     │
+│ - blocked: boolean                                                      │
+│ - expiryDate: LocalDate                                                 │
+│ - travelClass: TravelClass                                              │
+│ - subscription: Subscription                                            │
+│ - transactions: List<Transaction>                                       │
+│ - checkedInAt: Station                                                  │
+│ - checkedInTransport: TransportType                                     │
+│ - checkInTime: LocalDateTime                                            │
+│ - autoTopUpEnabled: boolean                                             │
+│ - autoTopUpThreshold: double                                            │
+│ - autoTopUpAmount: double                                               │
+│ - totalSpent: double                                                    │
+│ - totalDistanceKm: double                                               │
+│ - totalTrips: int                                                       │
+│ - lastCheckoutTime: LocalDateTime                                       │
+│ - lastCheckoutStation: Station                                          │
+│ - dayPassActive: boolean                                                │
+│ - dayPassDate: LocalDate                                                │
+│ - loyaltyPoints: int                                                    │
+│ - balanceProtection: boolean                                            │
+│ - bikeRented: boolean                                                   │
+│ - bikeRentStationName: String                                           │
 ├─────────────────────────────────────────────────────────────────────────┤
-│ + checkIn(station: Station, transport: TransportType): boolean         │
-│ + checkOut(station: Station): double                                   │
+│ + checkIn(station: Station, transport: TransportType): boolean          │
+│ + checkOut(station: Station): double                                    │
 │ + topUp(amount: double, source: String): boolean                        │
-│ + buyDayPass(): boolean                                                │
-│ + refundLastTrip(): boolean                                            │
-│ + applyMissedCheckoutPenalty(): double                                 │
-│ + isBlocked(): boolean                                                 │
-│ + isExpired(): boolean                                                 │
-│ + saveToFile(filename: String): void                                   │
-│ + loadFromFile(filename: String): OVCard                               │
+│ + buyDayPass(): boolean                                                 │
+│ + refundLastTrip(): boolean                                             │
+│ + transferTo(other: OVCard, amount: double): boolean                    │
+│ + applyMissedCheckoutPenalty(): double                                  │
+│ + rentBike(stationName: String): boolean                                │
+│ + returnBike(): boolean                                                 │
+│ + redeemLoyaltyPoints(points: int): boolean                             │
+│ + getBalanceWarning(): String                                           │
+│ + exportToCSV(filename: String): void                                   │
+│ + saveToFile(filename: String): void                                    │
+│ + static loadFromFile(filename: String): OVCard                         │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                               Station                                   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│ - name: String                                                         │
-│ - kilometerMarker: double                                             │
-│ - availableTransport: List<TransportType>                              │
+│ - name: String                                                          │
+│ - kilometerMarker: double                                               │
+│ - availableTransport: List<TransportType>                               │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ + hasTransportType(type: TransportType): boolean                        │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -348,11 +424,13 @@
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                             Transaction                                 │
 ├─────────────────────────────────────────────────────────────────────────┤
-│ - dateTime: LocalDateTime                                             │
-│ - type: String                                                         │
-│ - amount: double                                                       │
-│ - balanceAfter: double                                                │
-│ - description: String                                                 │
+│ - dateTime: LocalDateTime                                               │
+│ - type: String                                                          │
+│ - amount: double                                                        │
+│ - balanceAfter: double                                                  │
+│ - description: String                                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│ + toString(): String                                                    │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
@@ -361,7 +439,7 @@
 │ FIRST        │     │ TRAIN        │     │ NONE         │
 │ SECOND       │     │ BUS          │     │ DAL_VOORDEEL │
 │              │     │ TRAM         │     │ WEEKEND_VRIJ │
-│              │     │ METRO        │     │ ALTIJD_VOORDEEL
+│              │     │ METRO        │     │ ALTIJD_VOORDEEL│
 └──────────────┘     └──────────────┘     └──────────────┘
 ```
 
@@ -382,13 +460,15 @@
 
 | Regel | Voorwaarde | Effect |
 |-------|------------|--------|
-| Transfer | Check-in binnen 35 min na laatste uitcheck | Geen basisprijs |
+| Transfer | Check-in binnen 35 min na laatste uitcheck | Geen basisprijs (-€0.89) |
 | Bus/Tram transfer | Binnen 35 min | Rit gratis |
 | Dal Voordeel | Buiten spitsuren | 40% korting |
 | Weekend Vrij | Weekend (za/zo) | Rit gratis |
 | Altijd Voordeel | Altijd | 20% korting |
 | 1e klas (trein) | Reiziger in 1e klas | 1.5x prijs |
 | Spits toeslag | Werkdagen 6:30-9:00, 16:00-18:30 | 1.2x prijs |
+| Saldo-bescherming | Actief bij gemiste check-out | Boete verlaagd naar €5.00 i.p.v. €20.00 |
+| Loyaliteit | Reizen met de kaart | 1 punt per kilometer |
 
 ### 6.3 Kaartbeperkingen
 
@@ -419,13 +499,11 @@
 
 ### Voor Sprint 2 (Focus: Uitchecken)
 
-1. **Anonieme kaarten:** Focus op anonieme OV-chipkaarten zonder naam
-2. **Enkele kaart:** Reiziger heeft één actieve kaart
-3. **Enkelvoudige reis:** Geen complexe overstap-scenario's
-4. **Prijsberekening:** Volledig geïmplementeerd volgens domeinregels
-5. **Transfer:** Binnen 35 minuten na laatste uitcheck
-6. **Abonnementen:** Ondersteund maar focus ligt op standaard ritten
-7. **Data persistentie:** Transacties worden opgeslagen
+1. **Accountbeheer:** Ondersteuning voor persoonlijke accounts en meerdere kaarten
+2. **Personalisatie:** Keuze tussen anonieme en persoonlijke OV-chipkaarten
+3. **Uitgebreide Reis:** Volledige prijsberekening inclusief overstappen en abonnementen
+4. **Extra Services:** OV-fiets verhuur en loyaliteitssysteem geïntegreerd
+5. **Data persistentie:** Volledige opslag van accounts, kaarten en transacties
 
 ---
 
@@ -479,4 +557,3 @@ Eindtotaal = €3.84 (afgerond)
 
 ---
 
-*Document gegenereerd voor OOP1 Casus - Sprint 2*
